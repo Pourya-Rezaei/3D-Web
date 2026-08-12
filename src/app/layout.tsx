@@ -1,0 +1,55 @@
+import type { Metadata } from "next";
+import { Playfair_Display, Inter, Vazirmatn } from "next/font/google";
+import "./globals.css";
+import { Toaster } from "@/components/ui/toaster";
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800", "900"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+const vazirmatn = Vazirmatn({
+  variable: "--font-vazir",
+  subsets: ["arabic", "latin"],
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+});
+
+export const metadata: Metadata = {
+  title: "AURUM — ساعت‌سازی لوکس | کالای زمان",
+  description:
+    "AURUM، برند لوکس ساعت‌سازی. تلفیق هنر سنتی ساعت‌سازی سوئیسی با تکنولوژی روز. ساعت‌های شیک، مکانیزم‌های دقیق، طراحی بی‌بدیل.",
+  keywords: ["ساعت لوکس", "AURUM", "ساعت مچی", "ساعت سوئیسی", "توربیون", "کرنوگراف"],
+  authors: [{ name: "AURUM Atelier" }],
+  openGraph: {
+    title: "AURUM — ساعت‌سازی لوکس",
+    description: "تلفیق هنر و تکنولوژی در ساعت‌سازی",
+    type: "website",
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="fa" dir="rtl" suppressHydrationWarning>
+      <body
+        className={`${playfair.variable} ${inter.variable} ${vazirmatn.variable} antialiased bg-background text-foreground overflow-x-hidden`}
+      >
+        {children}
+        <Toaster />
+      </body>
+    </html>
+  );
+}
