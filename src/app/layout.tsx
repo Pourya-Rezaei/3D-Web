@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter, Vazirmatn } from "next/font/google";
+import { Playfair_Display, Inter, Vazirmatn, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -24,6 +24,13 @@ const vazirmatn = Vazirmatn({
   weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
+const jetbrains = JetBrains_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "700"],
+});
+
 export const metadata: Metadata = {
   title: "AURUM — ساعت‌سازی لوکس | کالای زمان",
   description:
@@ -45,7 +52,7 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
       <body
-        className={`${playfair.variable} ${inter.variable} ${vazirmatn.variable} antialiased bg-background text-foreground overflow-x-hidden`}
+        className={`${playfair.variable} ${inter.variable} ${vazirmatn.variable} ${jetbrains.variable} antialiased bg-background text-foreground overflow-x-hidden`}
       >
         {children}
         <Toaster />

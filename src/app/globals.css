@@ -9,7 +9,7 @@
   --font-sans: var(--font-vazir), var(--font-inter);
   --font-display: var(--font-playfair);
   --font-fa: var(--font-vazir);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-geist-mono), monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -110,6 +110,13 @@
   ::selection {
     background: rgba(201, 169, 106, 0.3);
     color: #f5f1e8;
+  }
+  /* Hide native cursor on devices that support hover (custom cursor is shown) */
+  @media (hover: hover) and (pointer: fine) {
+    .cursor-none,
+    .cursor-none * {
+      cursor: none !important;
+    }
   }
 }
 
