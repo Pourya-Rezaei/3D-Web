@@ -40,7 +40,7 @@ const BabylonShowroom = dynamic(
 
 export default function Home() {
   return (
-    <main className="relative bg-black min-h-screen overflow-x-hidden cursor-none">
+    <main className="relative bg-black min-h-screen">
       <CustomCursor />
       <PageTransition />
       <NavbarV2 />

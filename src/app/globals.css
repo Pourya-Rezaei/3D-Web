@@ -98,25 +98,19 @@
   }
   html {
     scroll-behavior: smooth;
+    /* Prevent horizontal scroll without breaking position: sticky */
+    overflow-x: clip;
   }
   body {
     background-color: #050505;
     color: #f5f1e8;
     font-family: var(--font-vazir), var(--font-inter), sans-serif;
-    overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
   ::selection {
     background: rgba(201, 169, 106, 0.3);
     color: #f5f1e8;
-  }
-  /* Hide native cursor on devices that support hover (custom cursor is shown) */
-  @media (hover: hover) and (pointer: fine) {
-    .cursor-none,
-    .cursor-none * {
-      cursor: none !important;
-    }
   }
 }
 

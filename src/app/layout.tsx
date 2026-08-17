@@ -52,7 +52,7 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
       <body
-        className={`${playfair.variable} ${inter.variable} ${vazirmatn.variable} ${jetbrains.variable} antialiased bg-background text-foreground overflow-x-hidden`}
+        className={`${playfair.variable} ${inter.variable} ${vazirmatn.variable} ${jetbrains.variable} antialiased bg-background text-foreground`}
       >
         {children}
         <Toaster />

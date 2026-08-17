@@ -20,7 +20,7 @@ export function Craftsmanship() {
     <section
       ref={sectionRef}
       id="craft"
-      className="relative min-h-[180vh] bg-black overflow-hidden"
+      className="relative min-h-[180vh] bg-black"
     >
       <div className="sticky top-0 h-screen flex items-center overflow-hidden">
         <div className="max-w-[1600px] mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 w-full items-center">
