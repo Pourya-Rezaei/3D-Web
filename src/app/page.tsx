@@ -1,28 +1,79 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import type { ComponentType } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { CustomCursor } from "@/components/CustomCursor";
 import { PageTransition } from "@/components/PageTransition";
 import { NavbarV2 } from "@/components/sections/NavbarV2";
 import { HeroV2 } from "@/components/sections/HeroV2";
-import { Manifesto } from "@/components/sections/Manifesto";
-import { WatchConfigurator } from "@/components/sections/WatchConfigurator";
-import { WatchAssembly } from "@/components/sections/WatchAssembly";
-import { Collection } from "@/components/sections/Collection";
-import { Craftsmanship } from "@/components/sections/Craftsmanship";
-import { FeaturedTimepiece } from "@/components/sections/FeaturedTimepiece";
-import { Heritage } from "@/components/sections/Heritage";
-import { StatsCounter } from "@/components/sections/StatsCounter";
-import { Testimonials } from "@/components/sections/Testimonials";
-import { Newsletter } from "@/components/sections/Newsletter";
-import { Contact } from "@/components/sections/Contact";
-import { Footer } from "@/components/sections/Footer";
 import {
   ScrollProgressV2,
   ScrollIndicatorV2,
 } from "@/components/sections/ScrollProgressV2";
+
+/**
+ * Performance: below-the-fold sections are code-split and loaded on the client
+ * only. This keeps the initial bundle (and initial HTML) small so the page
+ * paints faster on mobile and desktop, while the heavy 3D chunks download in
+ * parallel instead of blocking first render.
+ */
+
+/** Lightweight placeholder shown while a lazy section chunk downloads. */
+function SectionFallback() {
+  return (
+    <div
+      className="bg-black"
+      style={{ minHeight: "70vh" }}
+      aria-hidden="true"
+    />
+  );
+}
+
+function loadSection(loader: () => Promise<ComponentType>) {
+  return dynamic(loader, {
+    ssr: false,
+    loading: SectionFallback,
+  });
+}
+
+const Manifesto = loadSection(() =>
+  import("@/components/sections/Manifesto").then((m) => m.Manifesto)
+);
+const WatchConfigurator = loadSection(() =>
+  import("@/components/sections/WatchConfigurator").then((m) => m.WatchConfigurator)
+);
+const WatchAssembly = loadSection(() =>
+  import("@/components/sections/WatchAssembly").then((m) => m.WatchAssembly)
+);
+const Collection = loadSection(() =>
+  import("@/components/sections/Collection").then((m) => m.Collection)
+);
+const Craftsmanship = loadSection(() =>
+  import("@/components/sections/Craftsmanship").then((m) => m.Craftsmanship)
+);
+const FeaturedTimepiece = loadSection(() =>
+  import("@/components/sections/FeaturedTimepiece").then((m) => m.FeaturedTimepiece)
+);
+const Heritage = loadSection(() =>
+  import("@/components/sections/Heritage").then((m) => m.Heritage)
+);
+const StatsCounter = loadSection(() =>
+  import("@/components/sections/StatsCounter").then((m) => m.StatsCounter)
+);
+const Testimonials = loadSection(() =>
+  import("@/components/sections/Testimonials").then((m) => m.Testimonials)
+);
+const Newsletter = loadSection(() =>
+  import("@/components/sections/Newsletter").then((m) => m.Newsletter)
+);
+const Contact = loadSection(() =>
+  import("@/components/sections/Contact").then((m) => m.Contact)
+);
+const Footer = loadSection(() =>
+  import("@/components/sections/Footer").then((m) => m.Footer)
+);
 
 // Babylon.js is heavy — load only on client, after first paint
 const BabylonShowroom = dynamic(
@@ -76,7 +127,7 @@ export default function Home() {
       {/* Featured timepiece with hero watch image */}
       <FeaturedTimepiece />
 
-      {/* AI Concierge banner — entry to the v4 personalized experience */}
+      {/* Concierge banner — entry to the v4 personalized experience */}
       <ConciergeExperienceBanner />
 
       {/* Movement Explorer banner — entry to the v5 interactive anatomy */}
@@ -207,7 +258,7 @@ function CinematicExperienceBanner() {
 }
 
 /**
- * Concierge Experience banner — entry point to the v4 AI-powered experience.
+ * Concierge Experience banner — entry point to the v4 personalized experience.
  * Light/gold contrast against the dark v2 backdrop to signal it's something different.
  */
 function ConciergeExperienceBanner() {
@@ -230,7 +281,7 @@ function ConciergeExperienceBanner() {
         <div className="flex items-center justify-center gap-4 mb-6">
           <span className="w-16 h-px bg-[#b8945a]/50" />
           <span className="text-[10px] tracking-luxe text-[#b8945a]">
-            NEW — AI-POWERED
+            NEW — PERSONALIZED
           </span>
           <span className="w-16 h-px bg-[#b8945a]/50" />
         </div>
@@ -243,9 +294,9 @@ function ConciergeExperienceBanner() {
           transition={{ duration: 0.6 }}
           className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 border border-[#b8945a]/30 rounded-full"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#b8945a]" />
           <span className="text-[9px] tracking-luxe text-[#b8945a]">
-            Z-AI TECHNOLOGY
+            GENEVA ATELIER
           </span>
         </motion.div>
 
@@ -272,10 +323,10 @@ function ConciergeExperienceBanner() {
         >
           همان‌طور که یک sommelier شراب برای شما انتخاب می‌کند،
           <br />
-          هوش مصنوعی AURUM ساعتِ متناسب با شخصیت شما را پیشنهاد می‌دهد.
+          آوروم ساعتِ متناسب با شخصیت شما را پیشنهاد می‌دهد.
           <br />
           <span className="text-[#b8945a]">
-            ۵ سؤال — یک توصیه‌ی شخصی — یک گفت‌وگوی عمیق با Concierge
+            ۵ سؤال — یک توصیه‌ی شخصی — یک انتخابِ دقیق
           </span>
         </motion.p>
 
@@ -339,7 +390,7 @@ function ConciergeExperienceBanner() {
           transition={{ delay: 0.8 }}
           className="font-fa text-[10px] text-[#4a3f2a]/50 mt-6"
         >
-          ✦ با هوش مصنوعی Z-AI — حدود ۳ دقیقه
+          ✦ پنج سؤال — حدود ۳ دقیقه
         </motion.p>
       </div>
 

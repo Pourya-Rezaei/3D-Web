@@ -193,8 +193,6 @@ export function HeroV2() {
               />
               <ChromaticAberration
                 offset={new THREE.Vector2(0.0008, 0.0008)}
-                radialModulation={false}
-                modulationOffset={0}
               />
               <Vignette eskil={false} offset={0.2} darkness={0.9} />
               <Noise opacity={0.04} blendFunction={BlendFunction.OVERLAY} />

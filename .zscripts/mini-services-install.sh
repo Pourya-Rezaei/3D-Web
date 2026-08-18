@@ -1,36 +1,37 @@
 #!/bin/bash
 
-# 配置项
-ROOT_DIR="/home/z/my-project/mini-services"
+# Configuration
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$SCRIPT_DIR/../mini-services"
 
 main() {
-    echo "🚀 开始批量安装依赖..."
+    echo "🚀 Starting batch dependency install..."
     
-    # 检查 rootdir 是否存在
+    # Check whether the root directory exists
     if [ ! -d "$ROOT_DIR" ]; then
-        echo "ℹ️  目录 $ROOT_DIR 不存在，跳过安装"
+        echo "ℹ️  Directory $ROOT_DIR does not exist, skipping install"
         return
     fi
     
-    # 统计变量
+    # Counters
     success_count=0
     fail_count=0
     failed_projects=""
     
-    # 遍历 mini-services 目录下的所有文件夹
+    # Iterate over all folders under the mini-services directory
     for dir in "$ROOT_DIR"/*; do
-        # 检查是否是目录且包含 package.json
+        # Check whether it is a directory that contains a package.json
         if [ -d "$dir" ] && [ -f "$dir/package.json" ]; then
             project_name=$(basename "$dir")
             echo ""
-            echo "📦 正在安装依赖: $project_name..."
+            echo "📦 Installing dependencies: $project_name..."
             
-            # 进入项目目录并执行 bun install
+            # Enter the project directory and run bun install
             if (cd "$dir" && bun install); then
-                echo "✅ $project_name 依赖安装成功"
+                echo "✅ $project_name dependencies installed successfully"
                 success_count=$((success_count + 1))
             else
-                echo "❌ $project_name 依赖安装失败"
+                echo "❌ $project_name dependency install failed"
                 fail_count=$((fail_count + 1))
                 if [ -z "$failed_projects" ]; then
                     failed_projects="$project_name"
@@ -41,22 +42,22 @@ main() {
         fi
     done
     
-    # 汇总结果
+    # Summarize results
     echo ""
     echo "=================================================="
     if [ $success_count -gt 0 ] || [ $fail_count -gt 0 ]; then
-        echo "🎉 安装完成！"
-        echo "✅ 成功: $success_count 个"
+        echo "🎉 Install complete!"
+        echo "✅ Succeeded: $success_count"
         if [ $fail_count -gt 0 ]; then
-            echo "❌ 失败: $fail_count 个"
+            echo "❌ Failed: $fail_count"
             echo ""
-            echo "失败的项目:"
+            echo "Failed projects:"
             for project in $failed_projects; do
                 echo "  - $project"
             done
         fi
     else
-        echo "ℹ️  未找到任何包含 package.json 的项目"
+        echo "ℹ️  No projects with a package.json were found"
     fi
     echo "=================================================="
 }

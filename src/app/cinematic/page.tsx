@@ -47,7 +47,7 @@ export default function CinematicExperience() {
         >
           <span className="text-gold group-hover:-translate-x-1 transition-transform">→</span>
           <span className="font-fa text-xs text-foreground/70 group-hover:text-gold transition-colors">
-            بازگست به سایت
+            بازگشت به سایت
           </span>
         </Link>
 
@@ -90,7 +90,7 @@ export default function CinematicExperience() {
               className="inline-flex items-center gap-2 font-fa text-sm text-gold border border-gold/30 hover:bg-gold/10 px-6 py-3 transition-colors"
             >
               <span>→</span>
-              <span>بازگست به وب‌سایت اصلی</span>
+              <span>بازگشت به وب‌سایت اصلی</span>
             </Link>
           </div>
         </footer>

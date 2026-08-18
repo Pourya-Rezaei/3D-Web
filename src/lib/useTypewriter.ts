@@ -30,27 +30,32 @@ export function useTypewriter(
   const [isDone, setIsDone] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const onDoneRef = useRef(onDone);
-  onDoneRef.current = onDone;
-
-  useEffect(() => {
-    if (!enabled) return;
-    // Respect reduced motion preference
-    if (
+  const [prevFullText, setPrevFullText] = useState(fullText);
+  const [reduceMotion] = useState(
+    () =>
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      setDisplayText(fullText);
-      setIsDone(true);
-      onDoneRef.current?.();
-      return;
-    }
+  );
 
+  // Keep the callback ref current without writing to refs during render.
+  useEffect(() => {
+    onDoneRef.current = onDone;
+  });
+
+  // Reset animation state when the text to type changes (guarded, during render).
+  if (prevFullText !== fullText) {
+    setPrevFullText(fullText);
     setDisplayText("");
+    setIsTyping(false);
     setIsDone(false);
-    setIsTyping(true);
+  }
+
+  useEffect(() => {
+    if (!enabled || reduceMotion) return;
 
     let i = 0;
     const startTimer = setTimeout(() => {
+      setIsTyping(true);
       const tick = () => {
         if (i >= fullText.length) {
           setIsTyping(false);
@@ -71,7 +76,14 @@ export function useTypewriter(
       clearTimeout(startTimer);
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [fullText, speed, startDelay, enabled]);
+  }, [fullText, speed, startDelay, enabled, reduceMotion]);
+
+  // Respect reduced motion: show the full text immediately and notify listeners.
+  useEffect(() => {
+    if (reduceMotion && enabled) {
+      onDoneRef.current?.();
+    }
+  }, [reduceMotion, enabled, fullText]);
 
   const restart = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -103,7 +115,13 @@ export function useTypewriter(
     onDoneRef.current?.();
   };
 
-  return { text: displayText, isTyping, isDone, restart, skip };
+  return {
+    text: reduceMotion ? fullText : displayText,
+    isTyping: reduceMotion ? false : isTyping,
+    isDone: reduceMotion ? true : isDone,
+    restart,
+    skip,
+  };
 }
 
 /**
@@ -124,13 +142,23 @@ export function useMultiLineTypewriter(
   const [displayedLines, setDisplayedLines] = useState<string[]>([]);
   const [isDone, setIsDone] = useState(false);
   const onDoneRef = useRef(onDone);
-  onDoneRef.current = onDone;
+  const [prevLines, setPrevLines] = useState(lines);
 
+  // Keep the callback ref current without writing to refs during render.
   useEffect(() => {
-    if (!enabled || lines.length === 0) return;
+    onDoneRef.current = onDone;
+  });
+
+  // Reset animation state when the input lines change (guarded, during render).
+  if (prevLines !== lines) {
+    setPrevLines(lines);
     setCurrentLine(0);
     setDisplayedLines([]);
     setIsDone(false);
+  }
+
+  useEffect(() => {
+    if (!enabled || lines.length === 0) return;
 
     let lineIdx = 0;
     let charIdx = 0;

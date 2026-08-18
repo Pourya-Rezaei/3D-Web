@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/immutability */
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -181,11 +181,11 @@ function MainspringLayer({ visible, exploded, highlight }: LayerProps) {
   if (!visible) return null;
   return (
     <group ref={ref}>
-      <mesh ref={spiralRef} material={brassMat}>
-        <cylinderGeometry args={[0.3, 0.3, 0.08, 32]} rotation={[Math.PI / 2, 0, 0]} />
+      <mesh ref={spiralRef} material={brassMat} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.3, 0.3, 0.08, 32]} />
       </mesh>
-      <mesh position={[0, 0, 0.04]} material={goldMat}>
-        <cylinderGeometry args={[0.28, 0.28, 0.02, 32]} rotation={[Math.PI / 2, 0, 0]} />
+      <mesh position={[0, 0, 0.04]} material={goldMat} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.28, 0.28, 0.02, 32]} />
       </mesh>
       {[0.22, 0.18, 0.14, 0.1].map((r, i) => (
         <mesh key={i} position={[0, 0, 0.05]} material={steelMat}>
@@ -193,6 +193,47 @@ function MainspringLayer({ visible, exploded, highlight }: LayerProps) {
         </mesh>
       ))}
       <mesh position={[0, 0, 0.06]} material={jewelMat}>
+        <sphereGeometry args={[0.04, 12, 12]} />
+      </mesh>
+    </group>
+  );
+}
+
+function Gear({
+  position,
+  radius,
+  teeth,
+  mat,
+  jewelMat,
+  refObj,
+}: {
+  position: [number, number, number];
+  radius: number;
+  teeth: number;
+  mat: THREE.Material;
+  jewelMat: THREE.Material;
+  refObj: React.RefObject<THREE.Group | null>;
+}) {
+  return (
+    <group position={position} ref={refObj}>
+      <mesh material={mat} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[radius, radius, 0.05, teeth]} />
+      </mesh>
+      {Array.from({ length: teeth }, (_, i) => (
+        <mesh
+          key={i}
+          rotation={[0, 0, (i / teeth) * Math.PI * 2]}
+          position={[
+            Math.cos((i / teeth) * Math.PI * 2) * radius,
+            Math.sin((i / teeth) * Math.PI * 2) * radius,
+            0,
+          ]}
+          material={mat}
+        >
+          <boxGeometry args={[0.04, 0.04, 0.05]} />
+        </mesh>
+      ))}
+      <mesh position={[0, 0, 0.04]} material={jewelMat}>
         <sphereGeometry args={[0.04, 12, 12]} />
       </mesh>
     </group>
@@ -248,48 +289,11 @@ function GearTrainLayer({ visible, exploded, highlight }: LayerProps) {
 
   if (!visible) return null;
 
-  const Gear = ({
-    position,
-    radius,
-    teeth,
-    mat,
-    refObj,
-  }: {
-    position: [number, number, number];
-    radius: number;
-    teeth: number;
-    mat: THREE.Material;
-    refObj: React.RefObject<THREE.Group>;
-  }) => (
-    <group position={position} ref={refObj}>
-      <mesh material={mat}>
-        <cylinderGeometry args={[radius, radius, 0.05, teeth]} rotation={[Math.PI / 2, 0, 0]} />
-      </mesh>
-      {Array.from({ length: teeth }, (_, i) => (
-        <mesh
-          key={i}
-          rotation={[0, 0, (i / teeth) * Math.PI * 2]}
-          position={[
-            Math.cos((i / teeth) * Math.PI * 2) * radius,
-            Math.sin((i / teeth) * Math.PI * 2) * radius,
-            0,
-          ]}
-          material={mat}
-        >
-          <boxGeometry args={[0.04, 0.04, 0.05]} />
-        </mesh>
-      ))}
-      <mesh position={[0, 0, 0.04]} material={jewelMat}>
-        <sphereGeometry args={[0.04, 12, 12]} />
-      </mesh>
-    </group>
-  );
-
   return (
     <group ref={ref}>
-      <Gear position={[0.3, -0.3, 0]} radius={0.18} teeth={20} mat={goldLightMat} refObj={gear1} />
-      <Gear position={[0.55, 0.1, 0]} radius={0.14} teeth={16} mat={goldMat} refObj={gear2} />
-      <Gear position={[0.15, 0.45, 0]} radius={0.11} teeth={12} mat={goldDarkMat} refObj={gear3} />
+      <Gear position={[0.3, -0.3, 0]} radius={0.18} teeth={20} mat={goldLightMat} jewelMat={jewelMat} refObj={gear1} />
+      <Gear position={[0.55, 0.1, 0]} radius={0.14} teeth={16} mat={goldMat} jewelMat={jewelMat} refObj={gear2} />
+      <Gear position={[0.15, 0.45, 0]} radius={0.11} teeth={12} mat={goldDarkMat} jewelMat={jewelMat} refObj={gear3} />
     </group>
   );
 }
@@ -340,8 +344,8 @@ function EscapementLayer({ visible, exploded, highlight }: LayerProps) {
   return (
     <group ref={ref}>
       <group ref={escapeWheel} position={[0, 0, 0]}>
-        <mesh material={steelMat}>
-          <cylinderGeometry args={[0.13, 0.13, 0.04, 20]} rotation={[Math.PI / 2, 0, 0]} />
+        <mesh material={steelMat} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.13, 0.13, 0.04, 20]} />
         </mesh>
         {Array.from({ length: 20 }, (_, i) => (
           <mesh
@@ -548,22 +552,25 @@ function EnergyParticles({ visible }: { visible: boolean }) {
   const particleMeshes = useMemo(() => {
     if (!visible) return [];
     const count = 12;
-    const meshes = Array.from({ length: count }, () => {
+    return Array.from({ length: count }, () => {
       const geo = new THREE.SphereGeometry(0.025, 8, 8);
       const mat = new THREE.MeshBasicMaterial({
         color: "#ffe6a8",
         transparent: true,
         opacity: 0.9,
       });
-      const mesh = new THREE.Mesh(geo, mat);
-      return mesh;
+      return new THREE.Mesh(geo, mat);
     });
+  }, [visible]);
+
+  // Mutable animation state is written in an effect, not during render.
+  useEffect(() => {
+    const count = particleMeshes.length;
     particlesRef.current = Array.from({ length: count }, (_, i) => ({
-      progress: i / count,
+      progress: count > 0 ? i / count : 0,
       speed: 0.2 + Math.random() * 0.1,
     }));
-    return meshes;
-  }, [visible]);
+  }, [particleMeshes]);
 
   useFrame((_, delta) => {
     if (!groupRef.current || !visible) return;

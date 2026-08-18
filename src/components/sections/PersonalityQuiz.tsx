@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import type { QuizAnswers as Answers } from "@/lib/watches";
 
 /**
  * Personality Quiz — 5 questions, each with 3-4 options.
- * Each answer adds to a profile that's sent to /api/concierge for AI recommendation.
+ * Each answer adds to a profile that's sent to /api/concierge for a personalized recommendation.
  */
 
 type Question = {
@@ -24,14 +25,6 @@ type QuizOption = {
   description: string;
   descriptionFa: string;
   icon: string; // emoji or single character
-};
-
-type Answers = {
-  style?: string;
-  occasion?: string;
-  material?: string;
-  function?: string;
-  era?: string;
 };
 
 const questions: Question[] = [

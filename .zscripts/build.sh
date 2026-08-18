@@ -1,175 +1,176 @@
 #!/bin/bash
 
-# 将 stderr 重定向到 stdout，避免 execute_command 因为 stderr 输出而报错
+# Redirect stderr to stdout so execute_command does not fail on stderr output
 exec 2>&1
 
 set -e
 
-# 获取脚本所在目录（.zscripts 目录，即 workspace-agent/.zscripts）
-# 使用 $0 获取脚本路径（兼容 sh 和 bash）
+# Get the directory containing this script (the .zscripts directory, i.e. workspace-agent/.zscripts)
+# Use $0 to get the script path (works with both sh and bash)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Next.js 项目路径
-NEXTJS_PROJECT_DIR="/home/z/my-project"
+# Path of the Next.js project (the parent directory of .zscripts)
+NEXTJS_PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# 检查 Next.js 项目目录是否存在
+# Check whether the Next.js project directory exists
 if [ ! -d "$NEXTJS_PROJECT_DIR" ]; then
-    echo "❌ 错误: Next.js 项目目录不存在: $NEXTJS_PROJECT_DIR"
+    echo "❌ Error: Next.js project directory does not exist: $NEXTJS_PROJECT_DIR"
     exit 1
 fi
 
-echo "🚀 开始构建 Next.js 应用和 mini-services..."
-echo "📁 Next.js 项目路径: $NEXTJS_PROJECT_DIR"
+echo "🚀 Starting the build of the Next.js app and mini-services..."
+echo "📁 Next.js project path: $NEXTJS_PROJECT_DIR"
 
-# 切换到 Next.js 项目目录
+# Switch to the Next.js project directory
 cd "$NEXTJS_PROJECT_DIR" || exit 1
 
-# 设置环境变量
+# Set environment variables
 export NEXT_TELEMETRY_DISABLED=1
 
 BUILD_DIR="/tmp/build_fullstack_$BUILD_ID"
-echo "📁 清理并创建构建目录: $BUILD_DIR"
+echo "📁 Cleaning up and creating build directory: $BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 
-# 安装依赖
-echo "📦 安装依赖..."
+# Install dependencies
+echo "📦 Installing dependencies..."
 bun install
 
-# 构建 Next.js 应用
-echo "🔨 构建 Next.js 应用..."
+# Build the Next.js app
+echo "🔨 Building the Next.js app..."
 bun run build
 
-# 校验 standalone 服务端入口是否生成（部署成功率守卫）。
-# Next 仅在 next.config 含 output:"standalone" 时产出 .next/standalone/server.js。
-# 若用户/AI 编辑项目时改写或删除了该配置，bun run build 仍会成功（static 照常
-# 产出、退出码 0），但 standalone 缺失——打出的包里没有 server.js，部署到 FC 后
-# start.sh 找不到 next-service-dist/server.js → 不启动 Next → Caddy:81 反代空的
-# 3000 → FC 健康检查 120s 超时失败（线上 warmup_412 / FunctionNotStarted 的主因）。
-# 这里做一次自愈：仅在确实缺失时，给 next.config 补回 output:"standalone" 并重建。
-# 正常项目（已生成 server.js）整段跳过，不读写任何用户文件。
+# Verify that the standalone server entry is generated (deployment success guard).
+# Next produces .next/standalone/server.js only when next.config has output:"standalone".
+# If a user edits the project and changes or removes that setting, bun run build still
+# succeeds (static output is produced as usual, exit code 0), but standalone is missing —
+# the package has no server.js, so after deploying to FC, start.sh cannot find
+# next-service-dist/server.js → Next never starts → Caddy:81 reverse-proxies an empty
+# port 3000 → the FC health check times out after 120s (the main cause of warmup_412 /
+# FunctionNotStarted in production). Here we self-heal: only when it is actually missing,
+# add output:"standalone" back to next.config and rebuild. Normal projects (where
+# server.js was already generated) skip this whole block and never read or write user files.
 if [ ! -f ".next/standalone/server.js" ]; then
-    echo "⚠️  构建未产出 .next/standalone/server.js，开始自愈 next.config 的 output 配置..."
+    echo "⚠️  Build did not produce .next/standalone/server.js; self-healing the next.config output setting..."
     NEXT_CONFIG_FILE="$(ls next.config.ts next.config.js next.config.mjs next.config.cjs 2>/dev/null | head -1)"
 
     if [ -z "$NEXT_CONFIG_FILE" ]; then
-        echo "❌ 构建失败：未找到 next.config.*，无法生成 standalone 部署产物。"
+        echo "❌ Build failed: no next.config.* found, cannot generate the standalone deployment artifact."
         exit 1
     fi
 
     if grep -Eq "output\s*:\s*['\"]standalone['\"]" "$NEXT_CONFIG_FILE"; then
-        # 已声明 standalone 却仍没产出 server.js，说明不是配置缺失（可能 build 真
-        # 出错、自定义 distDir 等）。不臆改用户配置，直接失败并暴露原因。
-        echo "❌ 构建失败：$NEXT_CONFIG_FILE 已含 output:\"standalone\"，但仍未生成 .next/standalone/server.js。"
-        echo "   请检查上方构建日志中的报错或项目自定义的构建配置。"
+        # standalone is already declared but server.js was still not produced, so this is
+        # not a missing-config case (the build may have genuinely failed, custom distDir,
+        # etc.). Do not guess-modify the user's config; fail outright and surface the cause.
+        echo "❌ Build failed: $NEXT_CONFIG_FILE already has output:\"standalone\", but .next/standalone/server.js was still not generated."
+        echo "   Check the errors in the build log above or the project's custom build configuration."
         exit 1
     fi
 
     if grep -Eq "output\s*:\s*['\"]" "$NEXT_CONFIG_FILE"; then
-        # 已显式声明了其它 output（如 "export" 静态导出 / "standalone" 之外的值）。
-        # "export" 与本部署模型（standalone + 自定义 server）互斥——不能注入第二个
-        # output 覆盖用户意图（JS 对象重复 key 后者生效，注入也无效）。明确失败。
-        echo "❌ 构建失败：$NEXT_CONFIG_FILE 已声明非 standalone 的 output（如 \"export\" 静态导出），与当前部署模型不兼容。"
-        echo "   当前部署需要 output:\"standalone\"。请改为 standalone，或确认该项目是否应走静态托管而非部署沙箱。"
+        # A different output is explicitly declared (e.g. "export" static export, or any
+        # value other than "standalone"). "export" is mutually exclusive with this
+        # deployment model (standalone + custom server) — we cannot inject a second output
+        # to override the user's intent (duplicate JS object keys: the later one wins, so
+        # injection would be ineffective). Fail explicitly.
+        echo "❌ Build failed: $NEXT_CONFIG_FILE declares a non-standalone output (e.g. \"export\" static export), which is incompatible with the current deployment model."
+        echo "   The current deployment requires output:\"standalone\". Change it to standalone, or confirm whether this project should use static hosting instead of the deployment sandbox."
         exit 1
     fi
 
-    echo "🔧 检测到 $NEXT_CONFIG_FILE 缺少 output:\"standalone\"，自动注入后重新构建..."
+    echo "🔧 Detected that $NEXT_CONFIG_FILE is missing output:\"standalone\"; injecting it and rebuilding..."
     cp "$NEXT_CONFIG_FILE" "${NEXT_CONFIG_FILE}.zbak"
-    # 在第一个配置对象字面量起始的 { 之后插入 output:"standalone"，
-    # 覆盖脚手架常见写法：const nextConfig...= {  /  export default {  /  module.exports = {
+    # Insert output:"standalone" right after the opening { of the first config object
+    # literal, covering common scaffold styles: const nextConfig...= {  /  export default {  /  module.exports = {
     perl -0pi -e 's/((?:const\s+\w+[^=]*=|export\s+default|module\.exports\s*=)\s*\{)/$1\n  output: "standalone",/' "$NEXT_CONFIG_FILE"
 
     if ! grep -Eq "output\s*:\s*['\"]standalone['\"]" "$NEXT_CONFIG_FILE"; then
-        echo "❌ 未能匹配到可注入的配置对象，next.config 写法非常规，需人工添加 output:\"standalone\"。"
-        echo "   当前 $NEXT_CONFIG_FILE 内容："
+        echo "❌ Could not match an injectable config object; the next.config syntax is unconventional and needs output:\"standalone\" added manually."
+        echo "   Current $NEXT_CONFIG_FILE contents:"
         cat "$NEXT_CONFIG_FILE"
         mv "${NEXT_CONFIG_FILE}.zbak" "$NEXT_CONFIG_FILE"
         exit 1
     fi
 
-    echo "🔨 已注入 output:\"standalone\"，重新构建..."
+    echo "🔨 Injected output:\"standalone\"; rebuilding..."
     bun run build
 
     if [ ! -f ".next/standalone/server.js" ]; then
-        echo "❌ 注入 output:\"standalone\" 并重建后，仍未生成 .next/standalone/server.js。"
+        echo "❌ After injecting output:\"standalone\" and rebuilding, .next/standalone/server.js was still not generated."
         exit 1
     fi
-    echo "✅ 自愈成功：standalone 服务端入口已生成。"
+    echo "✅ Self-heal succeeded: the standalone server entry was generated."
 fi
 
-# 构建 mini-services
-# 检查 Next.js 项目目录下是否有 mini-services 目录
+# Build mini-services
+# Check whether the Next.js project has a mini-services directory
 if [ -d "$NEXTJS_PROJECT_DIR/mini-services" ]; then
-    echo "🔨 构建 mini-services..."
-    # 使用 workspace-agent 目录下的 mini-services 脚本
+    echo "🔨 Building mini-services..."
+    # Use the mini-services scripts from the workspace-agent directory
     sh "$SCRIPT_DIR/mini-services-install.sh"
     sh "$SCRIPT_DIR/mini-services-build.sh"
 
-    # 复制 mini-services-start.sh 到 mini-services-dist 目录
-    echo "  - 复制 mini-services-start.sh 到 $BUILD_DIR"
+    # Copy mini-services-start.sh to the mini-services-dist directory
+    echo "  - Copying mini-services-start.sh to $BUILD_DIR"
     cp "$SCRIPT_DIR/mini-services-start.sh" "$BUILD_DIR/mini-services-start.sh"
     chmod +x "$BUILD_DIR/mini-services-start.sh"
 else
-    echo "ℹ️  mini-services 目录不存在，跳过"
+    echo "ℹ️  mini-services directory does not exist, skipping"
 fi
 
-# 将所有构建产物复制到临时构建目录
-echo "📦 收集构建产物到 $BUILD_DIR..."
+# Copy all build artifacts to the temporary build directory
+echo "📦 Collecting build artifacts into $BUILD_DIR..."
 
-# 复制 Next.js standalone 构建输出
+# Copy the Next.js standalone build output
 if [ -d ".next/standalone" ]; then
-    echo "  - 复制 .next/standalone"
+    echo "  - Copying .next/standalone"
     cp -r .next/standalone "$BUILD_DIR/next-service-dist/"
 fi
 
-# 复制 Next.js 静态文件
+# Copy the Next.js static files
 if [ -d ".next/static" ]; then
-    echo "  - 复制 .next/static"
+    echo "  - Copying .next/static"
     mkdir -p "$BUILD_DIR/next-service-dist/.next"
     cp -r .next/static "$BUILD_DIR/next-service-dist/.next/"
 fi
 
-# 复制 public 目录
+# Copy the public directory
 if [ -d "public" ]; then
-    echo "  - 复制 public"
+    echo "  - Copying public"
     cp -r public "$BUILD_DIR/next-service-dist/"
 fi
 
-# Python 不继承 workspace-agent 的 /home/z/.venv。若项目包含 Python 源码或
-# 依赖清单，在构建期将生产依赖固化到产物，并保持 Python 源码的项目相对路径。
+# Python does not inherit workspace-agent's /home/z/.venv. If the project contains Python
+# source or a dependency manifest, freeze the production dependencies into the artifact at
+# build time and preserve the project-relative paths of the Python source.
 PROJECT_DIR="$NEXTJS_PROJECT_DIR" BUILD_DIR="$BUILD_DIR" \
     bash "$SCRIPT_DIR/python-runtime-build.sh"
 
-# 有 Preview 数据库时复制现有数据；没有时直接在部署产物中初始化空库。
-# 模板源码不携带 db/custom.db，不能依赖 dev.sh 必须在 Deploy 前成功运行过。
-PROJECT_DIR="$NEXTJS_PROJECT_DIR" BUILD_DIR="$BUILD_DIR" \
-    bash "$SCRIPT_DIR/database-runtime-build.sh"
-
-# 复制 Caddyfile（如果存在）
+# Copy the Caddyfile (if present)
 if [ -f "Caddyfile" ]; then
-    echo "  - 复制 Caddyfile"
+    echo "  - Copying Caddyfile"
     cp Caddyfile "$BUILD_DIR/"
 else
-    echo "ℹ️  Caddyfile 不存在，跳过"
+    echo "ℹ️  Caddyfile does not exist, skipping"
 fi
 
-# 复制 start.sh 脚本
-echo "  - 复制 start.sh 到 $BUILD_DIR"
+# Copy the start.sh script
+echo "  - Copying start.sh to $BUILD_DIR"
 cp "$SCRIPT_DIR/start.sh" "$BUILD_DIR/start.sh"
 chmod +x "$BUILD_DIR/start.sh"
 
-# 打包到 $BUILD_DIR.tar.gz
+# Package into $BUILD_DIR.tar.gz
 PACKAGE_FILE="${BUILD_DIR}.tar.gz"
 echo ""
-echo "📦 打包构建产物到 $PACKAGE_FILE..."
+echo "📦 Packaging build artifacts into $PACKAGE_FILE..."
 cd "$BUILD_DIR" || exit 1
 tar -czf "$PACKAGE_FILE" .
 cd - > /dev/null || exit 1
 
-# # 清理临时目录
+# # Clean up the temporary directory
 # rm -rf "$BUILD_DIR"
 
 echo ""
-echo "✅ 构建完成！所有产物已打包到 $PACKAGE_FILE"
-echo "📊 打包文件大小:"
+echo "✅ Build complete! All artifacts packaged into $PACKAGE_FILE"
+echo "📊 Package file size:"
 ls -lh "$PACKAGE_FILE"

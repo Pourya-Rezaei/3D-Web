@@ -7,7 +7,7 @@ const playfair = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
   display: "swap",
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "600", "700", "900"],
 });
 
 const cormorant = Cormorant_Garamond({
@@ -29,7 +29,7 @@ const vazirmatn = Vazirmatn({
   variable: "--font-vazir",
   subsets: ["arabic", "latin"],
   display: "swap",
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  weight: ["300", "400", "500", "600", "700", "900"],
 });
 
 const jetbrains = JetBrains_Mono({

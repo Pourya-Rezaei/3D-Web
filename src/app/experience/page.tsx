@@ -4,34 +4,20 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { PersonalityQuiz, type Answers } from "@/components/sections/PersonalityQuiz";
-import { ConciergeChat } from "@/components/sections/ConciergeChat";
+import { PersonalityQuiz } from "@/components/sections/PersonalityQuiz";
 import { useTypewriter } from "@/lib/useTypewriter";
+import { WATCH_DATABASE, type QuizAnswers, type Watch } from "@/lib/watches";
 
 type Stage = "intro" | "quiz" | "loading" | "result";
 
-type Recommendation = {
-  id: string;
-  name: string;
-  nameFa: string;
-  ref: string;
-  price: string;
-  image: string;
-  caliber: string;
-  material: string;
-  diameter: string;
-  edition: string;
-  description: string;
-};
-
 export default function ExperiencePage() {
   const [stage, setStage] = useState<Stage>("intro");
-  const [answers, setAnswers] = useState<Answers>({});
-  const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
-  const [alternative, setAlternative] = useState<Recommendation | null>(null);
+  const [answers, setAnswers] = useState<QuizAnswers>({});
+  const [recommendation, setRecommendation] = useState<Watch | null>(null);
+  const [alternative, setAlternative] = useState<Watch | null>(null);
   const [narrative, setNarrative] = useState<string>("");
 
-  const handleQuizComplete = async (finalAnswers: Answers) => {
+  const handleQuizComplete = async (finalAnswers: QuizAnswers) => {
     setAnswers(finalAnswers);
     setStage("loading");
 
@@ -52,20 +38,9 @@ export default function ExperiencePage() {
       }
     } catch (e) {
       console.error("Concierge failed:", e);
-      // Fallback: pick a random watch
-      const fallback: Recommendation = {
-        id: "rose",
-        name: "AURUM Rose",
-        nameFa: "آوروم رُز",
-        ref: "AR-024-RG",
-        price: "₠ ۴۸٬۰۰۰",
-        image: "/watches/watch-1.png",
-        caliber: "اتوماتیک — کالیبر AR-880",
-        material: "رُز‌گلد ۱۸ قیراط",
-        diameter: "۴۰ میلی‌متر",
-        edition: "تولید انبوه محدود",
-        description: "سفتی از طلای رُز‌گلد ۱۸ قیراط با دیسک خورشیدی مشکی.",
-      };
+      // Fallback: pick a default watch without the API
+      const fallback =
+        WATCH_DATABASE.find((w) => w.id === "rose") ?? WATCH_DATABASE[0];
       setRecommendation(fallback);
       setNarrative(
         `${fallback.nameFa} برای شما انتخاب شده است. این قطعه با روح شما هم‌خوانی دارد. در آتلیه‌ی AURUM ژنو، هر جزئیات آن برای زندگی شما طراحی شده است.`
@@ -183,7 +158,7 @@ function IntroScreen({ onStart }: { onStart: () => void }) {
           همان‌طور که یک sommelier شراب برای شما انتخاب می‌کند،
           ما ساعتِ AURUM شما را انتخاب می‌کنیم.
           <br />
-          <span className="text-[#b8945a]">پنج سؤال، یک پیشنهاد، یک گفت‌وگو.</span>
+          <span className="text-[#b8945a]">پنج سؤال، یک پیشنهاد، یک انتخابِ دقیق.</span>
         </motion.p>
 
         <motion.p
@@ -192,8 +167,8 @@ function IntroScreen({ onStart }: { onStart: () => void }) {
           transition={{ duration: 1, delay: 1 }}
           className="font-fa text-xs text-[#4a3f2a]/60 max-w-xl mx-auto mb-12 leading-relaxed"
         >
-          این تجربه از هوش مصنوعی Z-AI استفاده می‌کند تا توصیه‌ی شخصی شما را
-          تولید کند. سپس می‌توانید با Conciergeِ ما درباره‌ی هر جنبه‌ای گفت‌وگو کنید.
+          با پاسخ به پنج سؤال، توصیه‌ی شخصی شما از میان مجموعه‌ی AURUM انتخاب
+          می‌شود — قطعه‌ای که با سبک و سلیقه‌ی شما هم‌خوان است.
         </motion.p>
 
         <motion.button
@@ -263,7 +238,7 @@ function LoadingScreen() {
           <span className="italic text-gold-gradient">Consulting</span> the atelier…
         </h2>
         <p className="font-fa text-sm text-[#4a3f2a]/60">
-          هوش مصنوعی در حال تحلیل پاسخ‌های شماست
+          در حال تحلیل پاسخ‌های شما…
         </p>
         <div className="flex justify-center gap-1.5 mt-6">
           <span className="w-2 h-2 rounded-full bg-[#b8945a] dot-1" />
@@ -282,12 +257,11 @@ function ResultScreen({
   narrative,
   onRestart,
 }: {
-  recommendation: Recommendation;
-  alternative: Recommendation | null;
+  recommendation: Watch;
+  alternative: Watch | null;
   narrative: string;
   onRestart: () => void;
 }) {
-  const [showChat, setShowChat] = useState(false);
   const { text: narrativeText, isDone } = useTypewriter(narrative, {
     speed: 25,
     startDelay: 1000,
@@ -407,7 +381,7 @@ function ResultScreen({
               </button>
             </div>
 
-            {/* AI narrative */}
+            {/* Personal narrative */}
             <div className="bg-gradient-to-br from-[#fff8e8] to-[#f5f1e8] border border-[#b8945a]/20 p-6 mt-6">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#d4b074] to-[#8a6d3a]" />
@@ -423,40 +397,8 @@ function ResultScreen({
               </p>
             </div>
 
-            {/* Toggle chat button */}
-            {isDone && (
-              <motion.button
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                onClick={() => setShowChat(!showChat)}
-                className="w-full border border-[#b8945a]/40 hover:bg-[#b8945a]/5 py-3 font-fa text-sm text-[#b8945a] transition-colors"
-              >
-                {showChat ? "✓ بستن گفت‌وگو" : "گفت‌وگو با Concierge ←"}
-              </motion.button>
-            )}
           </motion.div>
         </div>
-
-        {/* Chat panel */}
-        <AnimatePresence>
-          {showChat && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
-            >
-              <ConciergeChat
-                watchContext={{
-                  name: recommendation.name,
-                  ref: recommendation.ref,
-                  description: recommendation.description,
-                }}
-                narrative="" // Already shown above
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Alternative */}
         {alternative && (

@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-# 获取脚本所在目录（.zscripts）
-# 使用 $0 获取脚本路径（与 build.sh 保持一致）
+# Get the directory containing this script (.zscripts)
+# Use $0 to get the script path (consistent with build.sh)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
@@ -124,11 +124,6 @@ log_step_start "bun install"
 echo "[BUN] Installing dependencies..."
 bun install
 log_step_end "bun install"
-
-log_step_start "bun run db:push"
-echo "[BUN] Setting up database..."
-bun run db:push
-log_step_end "bun run db:push"
 
 log_step_start "Starting Next.js dev server"
 echo "[BUN] Starting development server..."

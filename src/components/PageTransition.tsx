@@ -27,7 +27,7 @@ export function PageTransition() {
     <motion.div
       className="fixed inset-0 z-[150] pointer-events-none"
       initial={{ pointerEvents: "auto" }}
-      animate={{ pointerEvents: stage === "done" ? "none" : "auto" }}
+      animate={{ pointerEvents: "auto" }}
     >
       {/* Top curtain */}
       <motion.div
