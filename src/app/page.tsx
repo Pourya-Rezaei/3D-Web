@@ -1,93 +1,107 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { CustomCursor } from "@/components/CustomCursor";
-import { PageTransition } from "@/components/PageTransition";
-import { NavbarV2 } from "@/components/sections/NavbarV2";
-import { HeroV2 } from "@/components/sections/HeroV2";
-import { Manifesto } from "@/components/sections/Manifesto";
-import { WatchConfigurator } from "@/components/sections/WatchConfigurator";
-import { WatchAssembly } from "@/components/sections/WatchAssembly";
-import { Collection } from "@/components/sections/Collection";
-import { Craftsmanship } from "@/components/sections/Craftsmanship";
-import { FeaturedTimepiece } from "@/components/sections/FeaturedTimepiece";
-import { Heritage } from "@/components/sections/Heritage";
-import { StatsCounter } from "@/components/sections/StatsCounter";
-import { Testimonials } from "@/components/sections/Testimonials";
-import { Newsletter } from "@/components/sections/Newsletter";
-import { Contact } from "@/components/sections/Contact";
-import { Footer } from "@/components/sections/Footer";
-import {
-  ScrollProgressV2,
-  ScrollIndicatorV2,
-} from "@/components/sections/ScrollProgressV2";
-
-// Babylon.js is heavy — load only on client, after first paint
-const BabylonShowroom = dynamic(
-  () =>
-    import("@/components/sections/BabylonShowroom").then((m) => m.BabylonShowroom),
-  {
-    ssr: false,
-    loading: () => (
-      <section id="showroom" className="section-pad bg-black flex items-center justify-center">
-        <div className="font-display text-2xl text-gold-gradient animate-pulse">
-          در حال بارگذاری نمایشگاه سه‌بعدی...
-        </div>
-      </section>
-    ),
-  }
-);
+import { useEffect, useState } from "react";
+import { AudioProvider } from "@/components/AudioProvider";
+import { CinematicUI } from "@/components/sections/CinematicUI";
+import { ChapterI } from "@/components/sections/ChapterI";
+import { ChapterII } from "@/components/sections/ChapterII";
+import { ChapterIII } from "@/components/sections/ChapterIII";
+import { ChapterIV } from "@/components/sections/ChapterIV";
+import { ChapterV } from "@/components/sections/ChapterV";
+import { ChapterVI } from "@/components/sections/ChapterVI";
 
 export default function Home() {
+  const [userName, setUserName] = useState("");
+
+  // Listen for storage events from ChapterV (when user submits name)
+  useEffect(() => {
+    const handler = (e: StorageEvent) => {
+      if (e.key === "aurum-user-name" && e.newValue) {
+        setUserName(e.newValue);
+      }
+    };
+    window.addEventListener("storage", handler);
+    // Also poll in same-tab navigation
+    const interval = setInterval(() => {
+      const name = window.localStorage.getItem("aurum-user-name");
+      if (name && name !== userName) {
+        setUserName(name);
+      }
+    }, 1000);
+    return () => {
+      window.removeEventListener("storage", handler);
+      clearInterval(interval);
+    };
+  }, [userName]);
+
   return (
-    <main className="relative bg-black min-h-screen">
-      <CustomCursor />
-      <PageTransition />
-      <NavbarV2 />
-      <ScrollProgressV2 />
-      <ScrollIndicatorV2 />
+    <AudioProvider>
+      <main className="relative bg-[#060a18] min-h-screen">
+        <CinematicUI />
 
-      {/* Hero — Three.js 3D watch with postprocessing */}
-      <HeroV2 />
+        {/* Chapter I: The Invitation */}
+        <ChapterI />
 
-      {/* Brand manifesto with cinematic text reveal (GSAP) */}
-      <Manifesto />
+        {/* Chapter II: Atelier 1986 */}
+        <ChapterII />
 
-      {/* Watch configurator — interactive 3D */}
-      <WatchConfigurator />
+        {/* Chapter III: The Choice */}
+        <ChapterIII />
 
-      {/* Scroll-driven assembly animation */}
-      <WatchAssembly />
+        {/* Chapter IV: Assembly */}
+        <ChapterIV />
 
-      {/* Watch collection grid */}
-      <Collection />
+        {/* Chapter V: The Birth */}
+        <NameCaptureWrapper onNameSet={setUserName}>
+          <ChapterV />
+        </NameCaptureWrapper>
 
-      {/* 3D interactive showroom (Babylon.js) */}
-      <BabylonShowroom />
+        {/* Chapter VI: The Legacy */}
+        <ChapterVI userName={userName} />
 
-      {/* Craftsmanship with parallax (sticky scroll) */}
-      <Craftsmanship />
-
-      {/* Featured timepiece with hero watch image */}
-      <FeaturedTimepiece />
-
-      {/* Stats counter with animated numbers */}
-      <StatsCounter />
-
-      {/* Heritage timeline */}
-      <Heritage />
-
-      {/* Testimonials marquee + cards */}
-      <Testimonials />
-
-      {/* Newsletter / Private club */}
-      <Newsletter />
-
-      {/* Contact / booking form */}
-      <Contact />
-
-      {/* Footer */}
-      <Footer />
-    </main>
+        {/* Footer */}
+        <footer className="relative bg-[#060a18] border-t border-gold/10 py-12 px-6 text-center">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <span className="w-16 h-px bg-gold/40" />
+              <span className="text-[10px] tracking-luxe text-gold/70">
+                AURUM — MAISON HORLOGÈRE — GENÈVE 1986
+              </span>
+              <span className="w-16 h-px bg-gold/40" />
+            </div>
+            <div className="font-display text-3xl text-gold-gradient mb-2">AURUM</div>
+            <p className="font-fa text-xs text-foreground/40">
+              تجربه‌ی تعاملی ساعت‌سازی — © ۲۰۲۵
+            </p>
+          </div>
+        </footer>
+      </main>
+    </AudioProvider>
   );
+}
+
+/**
+ * Wrapper that captures the name from the ChapterV input via a custom event
+ * and stores it in localStorage so ChapterVI can read it.
+ */
+function NameCaptureWrapper({
+  children,
+  onNameSet,
+}: {
+  children: React.ReactNode;
+  onNameSet: (name: string) => void;
+}) {
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      if (customEvent.detail) {
+        onNameSet(customEvent.detail);
+        window.localStorage.setItem("aurum-user-name", customEvent.detail);
+      }
+    };
+    window.addEventListener("aurum-name-set", handler as EventListener);
+    return () => window.removeEventListener("aurum-name-set", handler as EventListener);
+  }, [onNameSet]);
+
+  return <>{children}</>;
 }

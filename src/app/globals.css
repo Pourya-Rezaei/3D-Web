@@ -8,6 +8,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-vazir), var(--font-inter);
   --font-display: var(--font-playfair);
+  --font-serif: var(--font-cormorant);
   --font-fa: var(--font-vazir);
   --font-mono: var(--font-geist-mono), monospace;
   --color-sidebar-ring: var(--sidebar-ring);
@@ -51,43 +52,47 @@
 
 :root {
   --radius: 0.5rem;
-  /* Luxury dark theme - applied globally */
-  --background: #050505;
-  --foreground: #f5f1e8;
-  --card: #0e0e0e;
-  --card-foreground: #f5f1e8;
-  --popover: #0e0e0e;
-  --popover-foreground: #f5f1e8;
+  /* V3 Cinematic Midnight Champagne theme */
+  --background: #060a18;
+  --foreground: #f0e6d2;
+  --card: #0a0f24;
+  --card-foreground: #f0e6d2;
+  --popover: #0a0f24;
+  --popover-foreground: #f0e6d2;
   --primary: #c9a96a;
-  --primary-foreground: #050505;
-  --secondary: #1a1a1a;
-  --secondary-foreground: #f5f1e8;
-  --muted: #1a1a1a;
+  --primary-foreground: #060a18;
+  --secondary: #0f1530;
+  --secondary-foreground: #f0e6d2;
+  --muted: #0f1530;
   --muted-foreground: #8a8175;
   --accent: #c9a96a;
-  --accent-foreground: #050505;
+  --accent-foreground: #060a18;
   --destructive: #b91c1c;
   --border: rgba(201, 169, 106, 0.15);
-  --input: rgba(245, 241, 232, 0.08);
+  --input: rgba(240, 230, 210, 0.08);
   --ring: #c9a96a;
 
   /* Brand-specific */
   --gold: #c9a96a;
   --gold-light: #e6c98b;
   --gold-dark: #8a7445;
-  --ink: #050505;
+  --ink: #060a18;
+  --midnight: #060a18;
+  --midnight-light: #0a0f24;
+  --midnight-accent: #1a2548;
+  --champagne: #f0e6d2;
 
   --chart-1: #c9a96a;
   --chart-2: #8a7445;
-  --chart-3: #f5f1e8;
-  --chart-4: #1a1a1a;
+  --chart-3: #f0e6d2;
+  --chart-4: #1a2548;
   --chart-5: #4a3f2a;
-  --sidebar: #0e0e0e;
-  --sidebar-foreground: #f5f1e8;
+  --sidebar: #0a0f24;
+  --sidebar-foreground: #f0e6d2;
   --sidebar-primary: #c9a96a;
-  --sidebar-primary-foreground: #050505;
-  --sidebar-accent: #1a1a1a;
-  --sidebar-accent-foreground: #f5f1e8;
+  --sidebar-primary-foreground: #060a18;
+  --sidebar-accent: #0f1530;
+  --sidebar-accent-foreground: #f0e6d2;
   --sidebar-border: rgba(201, 169, 106, 0.15);
   --sidebar-ring: #c9a96a;
 }
@@ -102,8 +107,8 @@
     overflow-x: clip;
   }
   body {
-    background-color: #050505;
-    color: #f5f1e8;
+    background-color: #060a18;
+    color: #f0e6d2;
     font-family: var(--font-vazir), var(--font-inter), sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -133,6 +138,9 @@
 /* Display font helper */
 .font-display {
   font-family: var(--font-playfair), serif;
+}
+.font-serif {
+  font-family: var(--font-cormorant), serif;
 }
 .font-fa {
   font-family: var(--font-vazir), sans-serif;
@@ -172,10 +180,10 @@
 
 /* Glass card */
 .glass {
-  background: rgba(20, 20, 20, 0.4);
+  background: rgba(10, 15, 36, 0.55);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(201, 169, 106, 0.15);
+  border: 1px solid rgba(201, 169, 106, 0.18);
 }
 
 .glass-gold {
@@ -183,6 +191,13 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(201, 169, 106, 0.25);
+}
+
+.glass-midnight {
+  background: rgba(6, 10, 24, 0.7);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(201, 169, 106, 0.15);
 }
 
 /* Hairline gold divider */
@@ -285,6 +300,45 @@
   .section-pad {
     padding: 12rem 6rem;
   }
+}
+
+/* Cinematic starry background */
+.starfield {
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(201, 169, 106, 0.04) 0%, transparent 30%),
+    radial-gradient(circle at 80% 70%, rgba(201, 169, 106, 0.03) 0%, transparent 35%),
+    radial-gradient(circle at 50% 50%, rgba(230, 201, 139, 0.02) 0%, transparent 40%);
+}
+
+.stars::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 25% 15%, rgba(240, 230, 210, 0.6), transparent),
+    radial-gradient(1px 1px at 50% 80%, rgba(240, 230, 210, 0.5), transparent),
+    radial-gradient(1px 1px at 75% 25%, rgba(240, 230, 210, 0.4), transparent),
+    radial-gradient(1px 1px at 10% 60%, rgba(240, 230, 210, 0.5), transparent),
+    radial-gradient(1px 1px at 90% 90%, rgba(240, 230, 210, 0.3), transparent),
+    radial-gradient(1.5px 1.5px at 35% 75%, rgba(201, 169, 106, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 65% 40%, rgba(201, 169, 106, 0.5), transparent);
+  background-size: 800px 800px;
+  background-repeat: repeat;
+  pointer-events: none;
+  animation: stars-drift 200s linear infinite;
+}
+
+@keyframes stars-drift {
+  from { background-position: 0 0; }
+  to { background-position: -800px 0; }
+}
+
+/* Cinematic chapter title */
+.chapter-title {
+  font-family: var(--font-cormorant), serif;
+  font-style: italic;
+  font-weight: 300;
+  letter-spacing: 0.05em;
 }
 
 /* Hide scrollbar utility */

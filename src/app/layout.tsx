@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter, Vazirmatn, JetBrains_Mono } from "next/font/google";
+import { Playfair_Display, Cormorant_Garamond, Inter, Vazirmatn, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -8,6 +8,14 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
   display: "swap",
   weight: ["400", "500", "600", "700", "800", "900"],
+});
+
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
 });
 
 const inter = Inter({
@@ -52,7 +60,7 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
       <body
-        className={`${playfair.variable} ${inter.variable} ${vazirmatn.variable} ${jetbrains.variable} antialiased bg-background text-foreground`}
+        className={`${playfair.variable} ${cormorant.variable} ${inter.variable} ${vazirmatn.variable} ${jetbrains.variable} antialiased bg-background text-foreground`}
       >
         {children}
         <Toaster />
