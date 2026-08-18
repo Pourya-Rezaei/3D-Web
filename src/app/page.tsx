@@ -79,6 +79,9 @@ export default function Home() {
       {/* AI Concierge banner — entry to the v4 personalized experience */}
       <ConciergeExperienceBanner />
 
+      {/* Movement Explorer banner — entry to the v5 interactive anatomy */}
+      <MovementExplorerBanner />
+
       {/* Stats counter with animated numbers */}
       <StatsCounter />
 
@@ -343,6 +346,168 @@ function ConciergeExperienceBanner() {
       {/* Decorative hairlines */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-px bg-gradient-to-r from-transparent via-[#b8945a]/40 to-transparent" />
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-px bg-gradient-to-r from-transparent via-[#b8945a]/40 to-transparent" />
+    </section>
+  );
+}
+
+/**
+ * Movement Explorer banner — entry point to /movement.
+ * Shows the 7 layers as chips, with a hint about tutorial mode.
+ */
+function MovementExplorerBanner() {
+  return (
+    <section className="relative py-24 md:py-32 overflow-hidden">
+      {/* Dark theme — different from the light Concierge banner */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#0a0805] to-[#0a0a0a]" />
+      {/* Subtle technical grid */}
+      <div
+        className="absolute inset-0 opacity-[0.04] pointer-events-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(201,169,106,1) 1px, transparent 1px), linear-gradient(90deg, rgba(201,169,106,1) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+          maskImage: "radial-gradient(circle at center, black 30%, transparent 70%)",
+        }}
+      />
+      {/* Radial spotlight */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 50%, rgba(201, 169, 106, 0.08), transparent 60%)",
+        }}
+      />
+
+      <div className="relative max-w-5xl mx-auto px-6 md:px-12 text-center">
+        {/* Top label */}
+        <div className="flex items-center justify-center gap-4 mb-6">
+          <span className="w-16 h-px bg-gold/40" />
+          <span className="text-[10px] tracking-luxe text-gold/70">
+            NEW — INTERACTIVE ANATOMY
+          </span>
+          <span className="w-16 h-px bg-gold/40" />
+        </div>
+
+        {/* Badge */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 border border-gold/30 rounded-full"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
+          <span className="text-[9px] tracking-luxe text-gold/80">
+            THREE.JS — REAL-TIME
+          </span>
+        </motion.div>
+
+        {/* Title */}
+        <motion.h2
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="font-display text-4xl md:text-6xl lg:text-7xl font-light leading-tight mb-6"
+        >
+          <span className="italic text-gold-gradient">Anatomy</span>
+          <br />
+          <span className="font-fa">یک ساعت مکانیکی</span>
+        </motion.h2>
+
+        {/* Description */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="font-fa text-base md:text-lg text-foreground/70 leading-loose max-w-2xl mx-auto mb-8"
+        >
+          مکانیزم یک ساعت را لایه به لایه کالبدشکافی کنید.
+          <br />
+          هر قطعه را روشن یا خاموش کنید، نمای تجمیع‌شده (exploded) را ببینید،
+          <br />
+          جریان انرژی از فنر تا عقربه را دنبال کنید.
+          <br />
+          <span className="text-gold">
+            یا با حالت آموزش، گام به گام یاد بگیرید چگونه یک ساعت کار می‌کند.
+          </span>
+        </motion.p>
+
+        {/* Layer chips */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.4 }}
+          className="flex flex-wrap items-center justify-center gap-2 mb-10"
+        >
+          {[
+            { num: "۰۱", label: "قاب" },
+            { num: "۰۲", label: "صفحه" },
+            { num: "۰۳", label: "فنر اصلی" },
+            { num: "۰۴", label: "چرخ‌دنده‌ها" },
+            { num: "۰۵", label: "گره‌گیر" },
+            { num: "۰۶", label: "چرخ تعادل" },
+            { num: "۰۷", label: "عقربه‌ها" },
+          ].map((l, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-2 px-3 py-2 bg-gold/5 backdrop-blur border border-gold/20"
+            >
+              <span className="font-display text-xs text-gold">{l.num}</span>
+              <span className="font-fa text-xs text-foreground/70">{l.label}</span>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.6 }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-3"
+        >
+          <Link
+            href="/movement"
+            data-cursor
+            data-cursor-text="کاوش"
+            className="group relative inline-flex items-center gap-3 px-12 py-5 overflow-hidden border border-gold/40 hover:border-gold transition-colors"
+          >
+            <span className="relative z-10 font-fa text-sm tracking-wide-luxe text-gold">
+              شروع کاوش
+            </span>
+            <span className="relative z-10 text-lg group-hover:translate-x-1 transition-transform">
+              ←
+            </span>
+            <span className="absolute inset-0 bg-gold/10 -translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
+          </Link>
+          <Link
+            href="/movement"
+            data-cursor
+            className="group inline-flex items-center gap-2 px-8 py-5 font-fa text-sm tracking-wide-luxe text-foreground/70 hover:text-gold border border-foreground/20 hover:border-gold/40 transition-colors"
+          >
+            <span>آموزش گام به گام</span>
+            <span className="group-hover:translate-x-1 transition-transform">←</span>
+          </Link>
+        </motion.div>
+
+        {/* Hint */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.8 }}
+          className="font-fa text-[10px] text-foreground/40 mt-6"
+        >
+          ✦ مدل 3D تعاملی — ۷ لایه — جریان انرژی زنده
+        </motion.p>
+      </div>
+
+      {/* Decorative hairlines */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
     </section>
   );
 }
